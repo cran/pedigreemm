@@ -1,0 +1,15 @@
+useDynLib(pedigreemm, .registration=TRUE)
+
+import("Matrix")
+import("lme4")
+
+export("Dmat", "inbreeding", "relfactor", "pedigree", "pedigreemm")
+
+exportClasses("pedigree", "pedigreemm")
+
+exportMethods(
+              "coerce",
+              "head",
+              "show",
+              "tail"
+              )
