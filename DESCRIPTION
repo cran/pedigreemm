@@ -1,5 +1,5 @@
 Package: pedigreemm
-Version: 0.2-3
+Version: 0.2-4
 Date: 2009-05-29
 Title: Pedigree-based mixed-effects models
 Author: Douglas Bates and Ana Ines Vazquez
@@ -14,6 +14,6 @@ License: GPL (>= 2)
 URL: http://pedigreemm.r-forge.r-project.org/
 Repository: CRAN
 Repository/R-Forge/Project: pedigreemm
-Repository/R-Forge/Revision: 104
-Date/Publication: 2009-07-02 22:28:26
-Packaged: 2009-07-01 20:51:55 UTC; rforge
+Repository/R-Forge/Revision: 107
+Date/Publication: 2009-08-13 08:59:08
+Packaged: 2009-08-04 20:19:20 UTC; rforge

@@ -7,7 +7,7 @@
 #' @param sire integer vector or factor representation of the sires
 #' @param dam integer vector or factor representation of the dams
 #' @param label character vector of labels
-#! @return an pedigree object of class \linkS4class{pedigree}
+#' @return an pedigree object of class \linkS4class{pedigree}
 
 #' @note \code{sire}, \code{dam} and \code{label} must all have the
 #' same length and all labels in \code{sire} and \code{dam} must occur
@@ -15,12 +15,17 @@
 #' @export
 pedigree <- function(sire, dam, label) {
     n <- length(sire)
-    stopifnot(n == length(dam), n == length(label))
-    sire <- as.integer(sire); dam <- as.integer(dam)
+    labelex <- c(label, NA, 0)
+    stopifnot(n == length(dam),
+              n == length(label),
+              all(sire %in% labelex),
+              all(dam %in% labelex))
+    sire <- as.integer(factor(sire, levels = label))
+    dam <- as.integer(factor(dam, levels = label))
     sire[sire < 1 | sire > n] <- NA
     dam[dam < 1 | dam > n] <- NA
     new("pedigree", sire = sire, dam = dam,
-	label = as.character(label))
+        label = as.character(label))
 }
 
 #' Coerce a pedigree to a sparse triangular matrix
