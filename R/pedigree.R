@@ -239,8 +239,10 @@ setMethod("ranef", signature(object = "pedigreemm"),
               for (nm in names(rf)) {
                   dm <- data.matrix(ans[[nm]])
                   cn <- colnames(dm)
+                  rn <- rownames(dm)
                   dm <- as.matrix(rf[[nm]] %*% dm)
                   colnames(dm) <- cn
+                  rownames(dm) <- rn
                   ans[[nm]] <- data.frame(dm, check.names = FALSE)
               }
           }
@@ -256,3 +258,16 @@ setMethod("ranef", signature(object = "pedigreemm"),
                         })
           ans
       })
+
+
+setMethod("fitted", signature(object = "pedigreemm"),
+          function(object, ...)
+
+      {
+
+           stop("fitted() not applicable to pedigreemm objects")
+           
+
+      })
+
+
