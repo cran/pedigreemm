@@ -135,16 +135,19 @@ Dmat <- function(ped)
 #'    Default is the complete set of labels in the pedigree.
 #' @return an object that inherits from \linkS4class{CHMfactor}
 #' @export
-relfactor <- function(ped, labs = ped@label)
+relfactor <- function(ped, labs)
 {
     stopifnot(is(ped, "pedigree"))
+    if (missing(labs))                  # square case
+        return(Diagonal(x = sqrt(Dmat(ped))) %*% 
+               solve(t(as(ped, "sparseMatrix"))))
     labs <- factor(labs) # drop unused levels from a factor
     stopifnot(all(labs %in% ped@label))
-    rect <- Diagonal(x = sqrt(Dmat(ped))) %*% # rectangular factor
-        solve(t(as(ped, "sparseMatrix")),
+    rect <- Diagonal(x = sqrt(Dmat(ped))) %*% 
+        solve(t(as(ped, "sparseMatrix")), # rectangular factor
               Matrix:::fac2sparse(factor(labs, levels = ped@label),
                                   drop = FALSE))
-    as(Cholesky(crossprod(rect)), "sparseMatrix")
+    chol(crossprod(rect))
 }
 
 pedigreemm <-

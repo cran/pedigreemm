@@ -1,3 +1,14 @@
+2009-05-29  Douglas Bates <bates@stat.wisc.edu>
+
+	* [r98] man/relfactor.Rd: Change man page for new default values
+	* [r97] DESCRIPTION, R/pedigree.R: Correction to relfactor; new release.
+
+2009-05-29  Ana Vazquez <anainesvs@gmail.com>
+
+	* [r96] man/relfactor.Rd: Cholesky() substituted by chol()
+	* [r95] R/pedigree.R:
+	* [r94] man/relfactor.Rd: bug in relfactor computation and modification
+	  in relfactor.Rd
 2009-05-20  Douglas Bates <bates@stat.wisc.edu>
 
 	* [r92] DESCRIPTION, man/pedigreemm-class.Rd: New release with corrected

@@ -1,7 +1,7 @@
 \name{relfactor}
 \alias{relfactor}
 \title{Relationship factor from a pedigree...}
-\usage{relfactor(ped, labs=ped@label)}
+\usage{relfactor(ped, labs)}
 \description{Relationship factor from a pedigree}
 \details{
   Determine the right Cholesky factor of the relationship matrix for the
@@ -17,6 +17,9 @@
     Default is the complete set of labels in the pedigree.}
 }
 \examples{
+
+## Example from chapter 2 of Mrode (2005)
+
 ped <- pedigree(sire = c(NA,NA,1, 1,4,5),
                 dam  = c(NA,NA,2,NA,3,2), label= 1:6)
 (fac <- relfactor(ped))
