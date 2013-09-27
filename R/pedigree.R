@@ -104,7 +104,7 @@ setMethod("chol", "pedigree",
 #' @export
 inbreeding <- function(ped) {
     stopifnot(is(ped, "pedigree"))
-    .Call(pedigreemm:::pedigree_inbreeding, ped)
+    .Call(pedigree_inbreeding, ped)
 }
 
 #' Diagonal of D in the A = TDT' factorization.
@@ -150,9 +150,132 @@ relfactor <- function(ped, labs)
     stopifnot(all(labs %in% ped@label))
     rect <- Diagonal(x = sqrt(Dmat(ped))) %*% 
         solve(t(as(ped, "sparseMatrix")), # rectangular factor
-              Matrix:::fac2sparse(factor(labs, levels = ped@label),
-                                  drop = FALSE))
-    chol(crossprod(rect))
+              as(factor(labs, levels = ped@label),"sparseMatrix"))
+    relf<-chol(crossprod(rect))
+    dimnames(relf)[[1]]<- dimnames(relf)[[2]]<-labs
+    relf
+}
+
+
+#' Inverse of the Relationship Matrix
+#'
+#' @param ped a pedigree that includes the individuals who occur in svec
+#'    which to restrict the relationship matrix. If \code{labs} is a
+#'    factor then the levels of the factor are used as the labels.
+#'    Default is the complete set of labels in the pedigree.
+#' @return an object that inherits from \linkS4class{CHMfactor}
+#' @export
+getAInv <- function(ped)
+{
+    stopifnot(is(ped, "pedigree"))    
+    T_Inv <- as(ped, "sparseMatrix")
+    D_Inv <- diag(1/Dmat(ped))
+    aiMx<-t(T_Inv) %*% D_Inv %*% T_Inv
+    dimnames(aiMx)[[1]]<-dimnames(aiMx)[[2]] <-ped@label
+    aiMx
+}
+
+#' Additive Relationship Matrix
+#'
+#' @param ped a pedigree that includes the individuals who occur in svec
+#'    which to restrict the relationship matrix. If \code{labs} is a
+#'    factor then the levels of the factor are used as the labels.
+#'    Default is the complete set of labels in the pedigree.
+#' @return an object that inherits from \linkS4class{CHMfactor}
+#' @export
+getA <- function(ped)
+{
+    stopifnot(is(ped, "pedigree"))
+    aMx<-crossprod(relfactor(ped))
+    dimnames(aMx)[[1]]<-dimnames(aMx)[[2]] <-ped@label
+    aMx
+}
+
+#' Counts number of generations of ancestors for one subject. Use recursion. 
+#' 
+#' @param pede data frame with a pedigree and a column for the number 
+#' of generations of each subject.
+#' @param id subject for which we want the number of generations.
+#' @return a data frame object with the pedigree and generation of
+#'    ancestors for subject id.
+#' 
+getGenAncestors <- function(pede, id){
+    j <- which(pede$id==id)
+    parents <- c(pede$sire[j], pede$dam[j])
+    parents <- parents[!is.na(parents)]
+    np <- length(parents)
+    if(np==0)
+    {
+        pede$gene[j] <-0
+        return(pede)
+    }
+    ## get the number of generations in parent number one
+    tmpgenP1 <- pede$gene[pede$id==parents[1]]
+    if( is.na(tmpgenP1))
+    {
+        pede <- getGenAncestors(pede, parents[1])
+        genP1  <- 1 + pede$gene[pede$id==parents[1]]
+    }  else {
+        genP1 <- 1 + tmpgenP1
+    }
+    ## find out if there is a parent number two
+    if (np==2){
+        tmpgenP2 <- pede$gene[pede$id==parents[2]]
+        if( is.na(tmpgenP2))
+        {
+            pede <- getGenAncestors(pede, parents[2])
+            genP2  <- 1 + pede$gene[pede$id==parents[2]]
+        }  else {
+            genP2 <- 1 + tmpgenP2
+        }
+        genP1 <- max(genP1, genP2)
+    }
+    pede$gene[j] <- genP1
+    ## print(paste('id:', id, ', gen:', genP1, ', row:', j))
+    pede
+}
+
+#' Edits a disordered or incomplete pedigree, 
+#'    1_ add labels for the sires and dams not listed as labels before.
+#'    2_ order pedigree based on recursive calls to getGenAncestors.
+#' @param sire integer vector or factor representation of the sires
+#' @param dam integer vector or factor representation of the dams
+#' @param label character vector of labels
+#' @param verbose logical to print the row of the pedigree that the 
+#'    function is ordering. Default is FALSE.
+#' @return a data frame with the pedigree ordered.
+#' @export
+editPed <- function(sire, dam, label, verbose = FALSE)
+{
+    nped <- length(sire)
+    if (nped != length(dam))  stop("sire and dam have to be of the same length")
+    if (nped != length(label)) stop("label has to be of the same length than sire and dam")
+    tmp <- unique(sort(c(as.character(sire), as.character(dam))))
+    
+    missingP <-NULL
+    if(any(completeId <- ! tmp %in% as.character(label))) missingP <- tmp[completeId]
+    labelOl <- c(as.character(missingP),as.character(label))
+    sireOl <- c(rep(NA, times=length(missingP)),as.character(sire))
+    damOl  <- c(rep(NA, times=length(missingP)),as.character(dam))
+    sire <- as.integer(factor(sireOl, levels = labelOl))
+    dam  <- as.integer(factor(damOl, levels = labelOl))
+    nped <-length(labelOl)
+    label <-1:nped
+    sire[!is.na(sire) & (sire<1 | sire>nped)] <- NA
+    dam[!is.na(dam) & (dam < 1 | dam > nped)] <- NA
+    pede <- data.frame(id= label, sire= sire, dam= dam, gene=rep(NA, times=nped))
+    noParents <- (is.na(pede$sire) & is.na(pede$dam))
+    pede$gene[noParents] <- 0
+    for(i in 1:nped){
+        if(verbose) print(i)
+        if(is.na(pede$gene[i])){
+            id <-pede$id[i]
+            pede <-getGenAncestors(pede, id)
+        }}
+    ord<- order(pede$gene)
+    ans<-data.frame(label=labelOl, sire=sireOl, dam=damOl, gene=pede$gene,
+                    stringsAsFactors =F)
+    ans[ord,]
 }
 
 pedigreemm <-
@@ -161,82 +284,71 @@ pedigreemm <-
              subset, weights, na.action, offset, contrasts = NULL,
              model = TRUE, x = TRUE, ...)
 {
+    gaus <- FALSE
+    if (is.null(family)) {
+        gaus <- TRUE
+    } else {
+        if (is.character(family)) gaus <- family == "gaussian"
+        if (is.function(family)) gaus <- family == gaussian
+        if (inherits(family, "family"))
+            gaus <- family$family == "gaussian" && family$link == "identity"
+    }
     mc <- match.call()
     lmerc <- mc                         # create a call to lmer
-    lmerc[[1]] <- as.name("lmer")
+    lmerc[[1]] <- as.name("glmer")
+    if (gaus) lmerc[[1]] <- as.name("lmer")
     lmerc$pedigree <- NULL
+    if (!gaus) lmerc$REML <- NULL
 
-    if (!length(pedigree))              # call lmer instead
+    if (!length(pedigree))              # call [g]lmer instead
         return(eval.parent(lmerc))
 
     stopifnot(is.list(pedigree),        # check the pedigree argument
               length(names(pedigree)) == length(pedigree),
               all(sapply(pedigree, is, class2 = "pedigree")))
-                                     
-    lmerc$doFit <- FALSE # call lmer without pedigree and with doFit = FALSE
+    
     lmf <- eval(lmerc, parent.frame())
 
     
     relfac <- pedigree          # copy the pedigree list for relfactor
     pnms <- names(pedigree)
-    stopifnot(all(pnms %in% names(lmf$FL$fl)))
-    asgn <- attr(lmf$FL$fl, "assign")
+    pp <- lmf@pp
+    resp <- lmf@resp
+    fl <- lmf@flist
+    stopifnot(all(pnms %in% names(fl)))
+    asgn <- attr(fl, "assign")
+    Zt <- pp$Zt
     for (i in seq_along(pedigree)) {
-        tn <- which(match(pnms[i], names(lmf$FL$fl)) == asgn)
+        tn <- which(match(pnms[i], names(fl)) == asgn)
         if (length(tn) > 1)
             stop("a pedigree factor must be associated with only one r.e. term")
-        Zt <- lmf$FL$trms[[tn]]$Zt
-        relfac[[i]] <- relfactor(pedigree[[i]], rownames(Zt))
-        lmf$FL$trms[[tn]]$Zt <- lmf$FL$trms[[tn]]$A <- relfac[[i]] %*% Zt
+        ind <- (lmf@Gp)[tn:(tn+1L)]
+        rowsi <- (ind[1]+1L):ind[2]
+        relfac[[i]] <- relfactor(pedigree[[i]], rownames(Zt)[rowsi])
+        Zt[rowsi,] <- relfac[[i]] %*% Zt[rowsi,]
     }
-    ans <- do.call(if (!is.null(lmf$glmFit)) lme4:::glmer_finalize else lme4:::lmer_finalize, lmf)
-    ans <- new("pedigreemm", relfac = relfac, ans)
-    ans@call <- match.call()
+    reTrms <- list(Zt=Zt,theta=lmf@theta,Lambdat=pp$Lambdat,Lind=pp$Lind,
+                   lower=lmf@lower,flist=lmf@flist,cnms=lmf@cnms, Gp=lmf@Gp)
+    dfl <- list(fr=lmf@frame, X=pp$X, reTrms=reTrms, start=lmf@theta)
+    if (gaus) (dfl$REML = resp$REML > 0L)
+    devfun <- do.call(mkLmerDevfun, dfl)
+    opt <- optimizeLmer(devfun, optimizer="Nelder_Mead",...)
+    mm <- mkMerMod(environment(devfun), opt, reTrms, lmf@frame, mc)
+    ans <- do.call(new, list(Class="pedigreemm", relfac=relfac,
+                             frame=mm@frame, flist=mm@flist, cnms=mm@cnms, Gp=mm@Gp,
+                             theta=mm@theta, beta=mm@beta,u=mm@u,lower=mm@lower,
+                             devcomp=mm@devcomp, pp=mm@pp,resp=mm@resp,optinfo=mm@optinfo))
+    ans@call <- evalq(mc)
     ans
 }
 
-ZStar <-
-    function(formula, data, family = NULL, REML = TRUE, pre = list(),
-             control = list(), start = NULL, verbose = FALSE, 
-             subset, weights, na.action, offset, contrasts = NULL,
-             model = TRUE, x = TRUE, ...)
-{
-    mc <- match.call()
-    lmerc <- mc                         # create a call to lmer
-    lmerc[[1]] <- as.name("lmer")
-    lmerc$pre <- NULL
-
-    if (!length(pre))              # call lmer instead
-        return(eval.parent(lmerc))
-
-    stopifnot(is.list(pre),        # check the pre argument
-              length(names(pre)) == length(pre),
-              all(sapply(pre, is, class2 = "Matrix")))
-                                     
-    lmerc$doFit <- FALSE # call lmer without pre and with doFit = FALSE
-    lmf <- eval(lmerc, parent.frame())
-
-    
-    pnms <- names(pre)
-    stopifnot(all(pnms %in% names(lmf$FL$fl)))
-    asgn <- attr(lmf$FL$fl, "assign")
-    for (i in seq_along(pre)) {
-        tn <- which(match(pnms[i], names(lmf$FL$fl)) == asgn)
-        if (length(tn) > 1)
-            stop("a pre factor must be associated with only one r.e. term")
-        Zt <- lmf$FL$trms[[tn]]$Zt
-        lmf$FL$trms[[tn]]$Zt <- lmf$FL$trms[[tn]]$A <- pre[[i]] %*% Zt
-    }
-    do.call(if (!is.null(lmf$glmFit)) lme4:::glmer_finalize else lme4:::lmer_finalize, lmf)
-}
-
 setMethod("ranef", signature(object = "pedigreemm"),
-          function(object, postVar = FALSE, drop = FALSE, whichel = names(wt), pedigree = TRUE, ...)
+          function(object, postVar = FALSE, drop = FALSE, whichel = names(ans), pedigree = TRUE, ...)
       {
           if ((postVar <- as.logical(postVar)) && (pedigree <- as.logical(pedigree)))
               stop("code for applying pedigree and posterior variances not yet written")
-          wt <- lme4:::whichterms(object)
-          ans <- ranef(as(object, "mer"), postVar, drop = FALSE, whichel)
+          ans <- ranef(as(object, "merMod"), postVar, drop = FALSE)
+          ans <- ans[whichel]
           if (pedigree) {
               if (postVar)
                   stop("postVar and pedigree cannot both be true")
@@ -266,13 +378,12 @@ setMethod("ranef", signature(object = "pedigreemm"),
 
 
 setMethod("fitted", signature(object = "pedigreemm"),
-          function(object, ...)
-
-      {
-
-           stop("fitted() not applicable to pedigreemm objects")
-           
-
-      })
+          function(object, ...) {
+              stop("fitted() not applicable to pedigreemm objects")
+          })
 
 
+setMethod("residuals", signature(object = "pedigreemm"),
+          function(object, ...) {
+              stop("residuals() not applicable to pedigreemm objects")
+          })

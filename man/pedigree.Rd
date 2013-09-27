@@ -17,6 +17,11 @@ pedigree(sire, dam, label)
       length as \code{sire} and \code{dam} giving a unique ID for the
       corresponding entry.}
 }
+\references{
+   2010. A.I. Vazquez, D.M. Bates, G.J.M. Rosa, D. Gianola and K.A. Weigel.
+   Technical Note: An R package for fitting generalized linear mixed models
+   in animal breeding. Journal of Animal Science, 88:497-504.
+}
 \value{
   an object of formal class \code{"\linkS4class{pedigree}"}.
 }

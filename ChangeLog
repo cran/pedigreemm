@@ -1,3 +1,20 @@
+2013-07-22  Ana Vazquez <anainesvs@gmail.com>
+
+        * [r105] man/pedigreemm.Rd: Add example.
+        * [r104] R/pedigree.R: put labels to return of the functions relfactor, A and Ainverse 
+        * [r103] R/pedigree.R: added indexing in  rownames(Zt)[rowsi]
+
+
+2012-08-19  Ana Vazquez <anainesvs@gmail.com>
+
+        * [r102] man/editPed.Rd: Correction F by FALSE; new release.
+        * [r101] R/pedigree.R: fix parentheses in the code
+
+2012-08-17  Ana Vazquez <anainesvs@gmail.com>
+
+        * [r100] NAMESPACE: Include functions editPed getA getAInv
+        * [r99] R/pedigree.R: created functions editPed getA getAInv getGenAncestors
+
 2009-05-29  Douglas Bates <bates@stat.wisc.edu>
 
 	* [r98] man/relfactor.Rd: Change man page for new default values

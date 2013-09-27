@@ -18,7 +18,7 @@ pedigreemm(formula, data, family = NULL, REML = TRUE,
     random-effects terms in the \code{formula} argument.}
   \item{formula}{as in \code{\link[lme4]{lmer}}}
   \item{data}{as in \code{\link[lme4]{lmer}}}
-  \item{family}{as in \code{\link[lme4]{lmer}}}
+  \item{family}{as in \code{\link[lme4]{glmer}}}
   \item{REML}{as in \code{\link[lme4]{lmer}}}
   \item{control}{as in \code{\link[lme4]{lmer}}}
   \item{start}{as in \code{\link[lme4]{lmer}}}
@@ -47,7 +47,31 @@ pedigreemm(formula, data, family = NULL, REML = TRUE,
 \value{
   a \code{\linkS4class{pedigreemm}} object.
 }
+\references{
+   2010. A.I. Vazquez, D.M. Bates, G.J.M. Rosa, D. Gianola and K.A. Weigel. 
+   Technical Note: An R package for fitting generalized linear mixed models 
+   in animal breeding. Journal of Animal Science, 88:497-504.
+}
 \seealso{\code{\linkS4class{pedigreemm}}, \code{\linkS4class{pedigree}},
   \code{\link{relfactor}}.}
-%\examples{}
+\examples{
+
+  p1 <- new("pedigree",
+           sire = as.integer(c(NA,NA,1, 1,4,5)),
+           dam  = as.integer(c(NA,NA,2,NA,3,2)),
+           label = as.character(1:6))
+  A<-getA(p1)
+  cholA<-chol(A)  
+  varU<-0.4; varE<-0.6; rep<-20
+  n<-rep*6
+  set.seed(108)
+  bStar<- rnorm(6, sd=sqrt(varU))
+  b<-crossprod(as.matrix(cholA),bStar)
+  ID <- rep(1:6, each=rep)
+  e0<-rnorm(n, sd=sqrt(varE))
+  y<-b[ID]+e0
+  fm1 <- pedigreemm(y ~ (1|ID) , pedigree = list(ID = p1))
+  table(y01<-ifelse(y<1.3,0,1))
+  fm2 <- pedigreemm(y01 ~ (1|ID) , pedigree = list(ID = p1), family = 'binomial')
+}
 \keyword{models}

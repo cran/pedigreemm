@@ -13,7 +13,6 @@
   The sire, herd and days in milk are also recorded for each
   cow.
 }
-%\usage{data(mastitis)}
 \format{
   A data frame with 1675 observations on the following 8 variables.
   \describe{
@@ -35,8 +34,16 @@
     Vazquez, A.I. 2007. Analysis of number of episodes of clinical mastitis
     in Norwegian Red and Holstein cows with Poisson and categorical data mixed models. 
     Master of Science Thesis. University of Wisconsin - Madison. 162 pp.
+
+   2010. A.I. Vazquez, D.M. Bates, G.J.M. Rosa, D. Gianola and K.A. Weigel.
+   Technical Note: An R package for fitting generalized linear mixed models
+   in animal breeding. Journal of Animal Science, 88:497-504.
 }
-%\references{~~ possibly secondary sources and usages ~~}
+\references{
+   2010. A.I. Vazquez, D.M. Bates, G.J.M. Rosa, D. Gianola and K.A. Weigel.
+   Technical Note: An R package for fitting generalized linear mixed models
+   in animal breeding. Journal of Animal Science, 88:497-504.
+}
 \seealso{\code{\link{pedSires}}, \code{\link{pedigree}}}
 \examples{
 str(mastitis)

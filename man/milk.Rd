@@ -11,7 +11,7 @@
   There were 1,314, 1,006, 640, 334 and 103 records were from first thorough fifth lactation animals. 
   
 }
-\usage{data(milk)}
+%\usage{data(milk)}
 \format{
   A data frame with 3397 observations on the following 9 variables.
   \describe{
@@ -30,8 +30,11 @@
     USDA web site.
     http://www.aipl.arsusda.gov/
  }
-% \references{
-% }
+\references{
+   2010. A.I. Vazquez, D.M. Bates, G.J.M. Rosa, D. Gianola and K.A. Weigel.
+   Technical Note: An R package for fitting generalized linear mixed models
+   in animal breeding. Journal of Animal Science, 88:497-504.
+}
 \examples{
 str(milk)
 }

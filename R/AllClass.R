@@ -24,4 +24,4 @@ setClass("pedigree", representation =
 	 })
 
 setClass("pedigreemm", representation = list(relfac = "list"),
-         contains = "mer")
+         contains = "lmerMod")
