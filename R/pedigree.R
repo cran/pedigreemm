@@ -148,13 +148,26 @@ relfactor <- function(ped, labs)
                solve(t(as(ped, "sparseMatrix"))))
     labs <- factor(labs) # drop unused levels from a factor
     stopifnot(all(labs %in% ped@label))
-    rect <- Diagonal(x = sqrt(Dmat(ped))) %*% 
+#    rect <- Diagonal(x = sqrt(Dmat(ped))) %*% 
+#        solve(t(as(ped, "sparseMatrix")), # rectangular factor
+#              as(factor(labs, levels = ped@label),"sparseMatrix"))
+
+    rect <- Diagonal(x = sqrt(Dmat(ped))) %*%
         solve(t(as(ped, "sparseMatrix")), # rectangular factor
-              as(factor(labs, levels = ped@label),"sparseMatrix"))
-    relf<-chol(crossprod(rect))
+              as(factor(ped@label, levels = ped@label),"sparseMatrix"))
+    tmpA<-crossprod(rect)
+    tmp<- ped@label %in% labs 
+    tmpA<-tmpA[tmp,tmp]
+
+    orlab <- order(as.numeric(factor(labped<-ped@label[tmp], levels=labs, ordered=T)))
+    labped<- as.character(labped[orlab])
+    tmpA  <- tmpA[orlab, orlab]
+    stopifnot(all.equal(as.character(labped), as.character(labs)))
+    relf<-chol(tmpA)
     dimnames(relf)[[1]]<- dimnames(relf)[[2]]<-labs
     relf
 }
+
 
 
 #' Inverse of the Relationship Matrix
@@ -288,15 +301,17 @@ pedigreemm <-
     if (is.null(family)) {
         gaus <- TRUE
     } else {
-        if (is.character(family)) gaus <- family == "gaussian"
-        if (is.function(family)) gaus <- family == gaussian
-        if (inherits(family, "family"))
-            gaus <- family$family == "gaussian" && family$link == "identity"
+        ## copied from glm()
+        if (is.character(family)) 
+            family <- get(family, mode = "function", envir = parent.frame())
+        if (is.function(family)) 
+            family <- family()
+        if (!inherits(family, "family")) stop("unknown family type")
+        gaus <- family$family == "gaussian" && family$link == "identity"
     }
     mc <- match.call()
     lmerc <- mc                         # create a call to lmer
-    lmerc[[1]] <- as.name("glmer")
-    if (gaus) lmerc[[1]] <- as.name("lmer")
+    lmerc[[1]] <- if (gaus) as.name("lmer") else as.name("glmer")
     lmerc$pedigree <- NULL
     if (!gaus) lmerc$REML <- NULL
 
@@ -330,11 +345,18 @@ pedigreemm <-
     reTrms <- list(Zt=Zt,theta=lmf@theta,Lambdat=pp$Lambdat,Lind=pp$Lind,
                    lower=lmf@lower,flist=lmf@flist,cnms=lmf@cnms, Gp=lmf@Gp)
     dfl <- list(fr=lmf@frame, X=pp$X, reTrms=reTrms, start=lmf@theta)
-    if (gaus) (dfl$REML = resp$REML > 0L)
-    devfun <- do.call(mkLmerDevfun, dfl)
-    opt <- optimizeLmer(devfun, optimizer="Nelder_Mead",...)
+    if (gaus) {
+        dfl$REML = resp$REML > 0L
+        devfun <- do.call(mkLmerDevfun,dfl)
+        opt <- optimizeLmer(devfun, optimizer="Nelder_Mead",...)
+    } else {
+        dfl$family <- family
+        devfun <- do.call(mkGlmerDevfun,dfl)
+        opt <- optimizeGlmer(devfun, optimizer="Nelder_Mead",...)
+    }
     mm <- mkMerMod(environment(devfun), opt, reTrms, lmf@frame, mc)
-    ans <- do.call(new, list(Class="pedigreemm", relfac=relfac,
+    cls <- if (gaus) "lmerpedigreemm" else "glmerpedigreemm"
+    ans <- do.call(new, list(Class=cls, relfac=relfac,
                              frame=mm@frame, flist=mm@flist, cnms=mm@cnms, Gp=mm@Gp,
                              theta=mm@theta, beta=mm@beta,u=mm@u,lower=mm@lower,
                              devcomp=mm@devcomp, pp=mm@pp,resp=mm@resp,optinfo=mm@optinfo))
@@ -387,3 +409,4 @@ setMethod("residuals", signature(object = "pedigreemm"),
           function(object, ...) {
               stop("residuals() not applicable to pedigreemm objects")
           })
+

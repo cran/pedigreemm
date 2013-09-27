@@ -14,7 +14,7 @@ setClass("pedigree", representation =
 	     snmiss <- !is.na(sire)
 	     dnmiss <- !is.na(dam)
 	     if (any(sire[snmiss] >= animal[snmiss]) ||
-		 any(dam[dnmiss] >= animal[dnmiss]))
+		       any(dam[dnmiss]  >= animal[dnmiss]))
 		 return("the sire and dam must precede the offspring")
              if (any(sire[snmiss] < 1 | sire[snmiss] > n) |
                  any(dam[dnmiss] < 1 | dam[dnmiss] > n))
@@ -24,4 +24,12 @@ setClass("pedigree", representation =
 	 })
 
 setClass("pedigreemm", representation = list(relfac = "list"),
-         contains = "lmerMod")
+         contains = "merMod")
+setClass("glmerpedigreemm", representation = list(resp="glmResp"),
+         contains = "pedigreemm")
+setClass("lmerpedigreemm", representation = list(resp="lmerResp"),
+         contains = "pedigreemm")
+
+
+
+
