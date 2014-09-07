@@ -162,3 +162,102 @@ SEXP pedigree_inbreeding(SEXP x)
     return ans;
 }
 
+/**
+ * This is a creplacement for the former R-function "getGenAncestors"
+ * It takes intger pointers to the sire, dam, id and generation vevtors
+ * and it changes the generation directly on the passed R-object, so there is no
+ * return value = void.
+ */
+
+void calc_generation(int* sire, int* dam, int* id, int* gene, int this_id) {
+
+    int j = this_id;
+    int has_sire = 0, has_dam = 0;
+    int gen_sire, gen_dam;
+
+/* check first parent */ 
+    if(sire[j] != NA_INTEGER) {
+
+      has_sire = 1;
+
+      if (gene[sire[j]-1] == NA_INTEGER) {
+
+        calc_generation(sire, dam, id, gene, sire[j]-1);
+        gen_sire = 1 + gene[sire[j]-1];
+
+      } else {
+
+          gen_sire = 1 + gene[sire[j]-1];      
+
+        }          
+
+    }
+
+/* check second parent */ 
+    if(dam[j] != NA_INTEGER) {
+
+      has_dam = 1;
+
+      if (gene[dam[j]-1] == NA_INTEGER) {
+
+        calc_generation(sire, dam, id, gene, dam[j]-1);
+        gen_dam = 1 + gene[dam[j]-1];
+
+      } else {
+
+          gen_dam = 1 + gene[dam[j]-1];      
+
+        }   
+
+    }
+
+    if (has_sire) {
+
+      if (has_dam) {
+
+        gene[j] = gen_sire >= gen_dam ? gen_sire : gen_dam;
+
+      } else {
+
+          gene[j] = gen_sire;
+
+        } 
+
+    } else {
+
+        gene[j] = has_dam ? gen_dam : 0; 
+
+      }
+
+}
+
+/**
+ * This function iterates over every element of the pedigree and let
+ * "calc_generation" calculate the generations. Again without a return value.
+ */
+
+
+void get_generation(SEXP sire_in, SEXP dam_in, SEXP id_in, SEXP gene_in, SEXP verbose_in) {
+
+    int *sire = INTEGER(sire_in),
+	*dam = INTEGER(dam_in),
+	*id = INTEGER(id_in),
+	*gene = INTEGER(gene_in);
+ 
+    int verbose = *INTEGER(verbose_in);
+    int n = LENGTH(sire_in);
+
+    for(int i=0; i<n; i++) {
+      
+      if(verbose) Rprintf("%i \n", i); 
+
+      if(gene[i] == NA_INTEGER) {
+
+        calc_generation(sire, dam, id, gene, i);
+
+      }
+
+    }
+
+}
+
