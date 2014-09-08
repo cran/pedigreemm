@@ -164,8 +164,8 @@ SEXP pedigree_inbreeding(SEXP x)
 
 /**
  * This is a creplacement for the former R-function "getGenAncestors"
- * It takes intger pointers to the sire, dam, id and generation vevtors
- * and it changes the generation directly on the passed R-object, so there is no
+ * It takes integer pointers to the sire, dam, id and generation vectors
+ * and it changes the generations directly on the passed R-object, so there is no
  * return value = void.
  */
 
