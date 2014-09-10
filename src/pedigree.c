@@ -209,7 +209,7 @@ void calc_generation(int* sire, int* dam, int* id, int* gene, int this_id) {
 
         }
         
-      if (gene_dam >= gene[j])  gene[j] = gene_dam;  
+      if (gene_dam > gene[j])  gene[j] = gene_dam;  
 
     }
 
