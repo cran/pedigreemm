@@ -162,3 +162,86 @@ SEXP pedigree_inbreeding(SEXP x)
     return ans;
 }
 
+/**
+ * This is a creplacement for the former R-function "getGenAncestors"
+ * It takes integer pointers to the sire, dam, id and generation vectors
+ * and it changes the generations directly on the passed R-object, so there is no
+ * return value = void.
+ */
+
+void calc_generation(int* sire, int* dam, int* id, int* gene, int this_id) {
+
+    int j = this_id;
+    int gene_sire, gene_dam;
+    
+/* If there are no parents assign 0 */
+    gene[j] = 0;
+
+/* check first parent */ 
+    if(sire[j] != NA_INTEGER) {
+
+      if (gene[sire[j]-1] == NA_INTEGER) {
+
+        calc_generation(sire, dam, id, gene, sire[j]-1);
+        gene_sire = 1 + gene[sire[j]-1];
+
+      } else {
+
+          gene_sire = 1 + gene[sire[j]-1];      
+
+        } 
+        
+      gene[j] = gene_sire;
+
+    }
+
+/* check second parent */ 
+    if(dam[j] != NA_INTEGER) {
+
+      if (gene[dam[j]-1] == NA_INTEGER) {
+
+        calc_generation(sire, dam, id, gene, dam[j]-1);
+        gene_dam = 1 + gene[dam[j]-1];
+
+      } else {
+
+          gene_dam = 1 + gene[dam[j]-1];      
+
+        }
+        
+      if (gene_dam > gene[j])  gene[j] = gene_dam;  
+
+    }
+
+}
+
+/**
+ * This function iterates over every element of the pedigree and let
+ * "calc_generation" calculate the generations. Again without a return value.
+ */
+
+
+void get_generation(SEXP sire_in, SEXP dam_in, SEXP id_in, SEXP gene_in, SEXP verbose_in) {
+
+    int *sire = INTEGER(sire_in),
+	*dam = INTEGER(dam_in),
+	*id = INTEGER(id_in),
+	*gene = INTEGER(gene_in);
+ 
+    int verbose = *INTEGER(verbose_in);
+    int n = LENGTH(sire_in);
+
+    for(int i=0; i<n; i++) {
+      
+      if(verbose) Rprintf("%i \n", i); 
+
+      if(gene[i] == NA_INTEGER) {
+
+        calc_generation(sire, dam, id, gene, i);
+
+      }
+
+    }
+
+}
+

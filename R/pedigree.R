@@ -182,7 +182,7 @@ getAInv <- function(ped)
 {
     stopifnot(is(ped, "pedigree"))    
     T_Inv <- as(ped, "sparseMatrix")
-    D_Inv <- diag(1/Dmat(ped))
+    D_Inv <- Diagonal(x=1/Dmat(ped))
     aiMx<-t(T_Inv) %*% D_Inv %*% T_Inv
     dimnames(aiMx)[[1]]<-dimnames(aiMx)[[2]] <-ped@label
     aiMx
@@ -279,12 +279,13 @@ editPed <- function(sire, dam, label, verbose = FALSE)
     pede <- data.frame(id= label, sire= sire, dam= dam, gene=rep(NA, times=nped))
     noParents <- (is.na(pede$sire) & is.na(pede$dam))
     pede$gene[noParents] <- 0
-    for(i in 1:nped){
-        if(verbose) print(i)
-        if(is.na(pede$gene[i])){
-            id <-pede$id[i]
-            pede <-getGenAncestors(pede, id)
-        }}
+    pede$gene<-as.integer(pede$gene)
+
+# new version that calls the C-function "get_generation"
+# Note: there is no return value, the R-objects are directly being changed
+
+    .Call("get_generation", pede$sire, pede$dam, pede$id, pede$gene, as.integer(verbose))    
+
     ord<- order(pede$gene)
     ans<-data.frame(label=labelOl, sire=sireOl, dam=damOl, gene=pede$gene,
                     stringsAsFactors =F)

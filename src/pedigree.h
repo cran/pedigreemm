@@ -8,5 +8,6 @@
 
 SEXP pedigree_chol(SEXP x, SEXP ans);
 SEXP pedigree_inbreeding(SEXP x);
+void get_generation(SEXP sire_in, SEXP dam_in, SEXP id_in, SEXP gene_in, SEXP verbose_in);
 
 #endif /* PEDIGREE_H */
