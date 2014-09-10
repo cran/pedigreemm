@@ -172,62 +172,46 @@ SEXP pedigree_inbreeding(SEXP x)
 void calc_generation(int* sire, int* dam, int* id, int* gene, int this_id) {
 
     int j = this_id;
-    int has_sire = 0, has_dam = 0;
-    int gen_sire, gen_dam;
+    int gene_sire, gene_dam;
+    
+/* If there are no parents assign 0 */
+    gene[j] = 0;
 
 /* check first parent */ 
     if(sire[j] != NA_INTEGER) {
 
-      has_sire = 1;
-
       if (gene[sire[j]-1] == NA_INTEGER) {
 
         calc_generation(sire, dam, id, gene, sire[j]-1);
-        gen_sire = 1 + gene[sire[j]-1];
+        gene_sire = 1 + gene[sire[j]-1];
 
       } else {
 
-          gen_sire = 1 + gene[sire[j]-1];      
+          gene_sire = 1 + gene[sire[j]-1];      
 
-        }          
+        } 
+        
+      gene[j] = gene_sire;
 
     }
 
 /* check second parent */ 
     if(dam[j] != NA_INTEGER) {
 
-      has_dam = 1;
-
       if (gene[dam[j]-1] == NA_INTEGER) {
 
         calc_generation(sire, dam, id, gene, dam[j]-1);
-        gen_dam = 1 + gene[dam[j]-1];
+        gene_dam = 1 + gene[dam[j]-1];
 
       } else {
 
-          gen_dam = 1 + gene[dam[j]-1];      
+          gene_dam = 1 + gene[dam[j]-1];      
 
-        }   
+        }
+        
+      if (gene_dam >= gene[j])  gene[j] = gene_dam;  
 
     }
-
-    if (has_sire) {
-
-      if (has_dam) {
-
-        gene[j] = gen_sire >= gen_dam ? gen_sire : gen_dam;
-
-      } else {
-
-          gene[j] = gen_sire;
-
-        } 
-
-    } else {
-
-        gene[j] = has_dam ? gen_dam : 0; 
-
-      }
 
 }
 
