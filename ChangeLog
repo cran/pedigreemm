@@ -1,3 +1,37 @@
+2023-08-14 Ana Vazquez <avazquez@msu.edu>
+       *[r107] DESCRIPTION
+        Email, and version number update 
+
+2023-08-11 Paulino Perez Rodriguez <perpdgo@colpos.mx>
+
+	*[r106] src/pedigree.c
+
+        Package pedigreemm version 0.3-3
+        Package built using 83394/R 4.3.0; x86_64-pc-linux-gnu; 2022-12-03 04:01:43 UTC; unix   
+        Checked with rchk version 29e18222e1cfa67ba8e63bd3b22a25f78593c554 LLVM version 14.0.5
+        More information at https://github.com/kalibera/cran-checks/blob/master/rchk/PROTECT.md
+        For rchk in docker image see https://github.com/kalibera/rchk/blob/master/doc/DOCKER.md
+
+        Suspicious call (two or more unprotected arguments) to Rf_setAttrib at pedigree_chol pedigreemm/src/pedigree.c:46
+
+        The rchk tool  detected a memory protection bug in the file pedigree.c 
+        
+	(line 46) that was fixed in this version. Only three lines of code were modified:
+	
+	before:
+
+	setAttrib(ans, install("F"), allocVector(REALSXP, n));
+
+	now has ben replaced with:
+
+	SEXP tmp2 = PROTECT(allocVector(REALSXP, n));
+	setAttrib(ans, install("F"), tmp2);
+
+	and a call to the UNPROTECT() macro was added at the end of the function:
+
+	UNPROTECT(1);
+	return ans;
+
 2013-07-22  Ana Vazquez <anainesvs@gmail.com>
 
         * [r105] man/pedigreemm.Rd: Add example.

@@ -1,5 +1,5 @@
-59936383d27284539d4df7657df7fcf4 *ChangeLog
-d51024178f715acf81f0c741cfdd7a15 *DESCRIPTION
+c65435c4b559957afbef9638ea2b5544 *ChangeLog
+32581170e56241afc6c50c04714791b1 *DESCRIPTION
 a45fe939de303b640022b4695af4e421 *NAMESPACE
 43e76f531e56ef5d4aea8ec7bdeb7674 *R/AllClass.R
 ddc2a3f40e4126963502b8057809ad52 *R/pedigree.R
@@ -26,5 +26,5 @@ d4069bf1c4155cd8310d5dbafe635465 *man/pedigree-class.Rd
 707a3ea226cda55b52735fe654734605 *man/pedigreemm.Rd
 642bd1553e50842647b428b363b779ed *man/relfactor.Rd
 210eed41998a666c75e2db08cc501fec *src/init.c
-2a64600efc4824081948469b24ea481a *src/pedigree.c
+a2c5a5df5ee1b316f8a65da8d39e4fcb *src/pedigree.c
 6d74c9445de7009943b8ef7c3cde9ab2 *src/pedigree.h
