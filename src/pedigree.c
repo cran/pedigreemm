@@ -109,10 +109,10 @@ SEXP pedigree_inbreeding(SEXP x)
     int *SI, *MI,		/* start and minor */
 	*sire = INTEGER(sp),
 	*dam = INTEGER(GET_SLOT(x, install("dam")));
-    double *F = Calloc(n + 1, double), /* inbreeding coefficients */
-      *L = Calloc(n + 1, double), *B = Calloc(n + 1, double);
-    int *Anc = Calloc(n + 1, int),	/* ancestor */
-	*LAP = Calloc(n + 1, int); 	/* longest ancestoral path */
+    double *F = calloc(n + 1, sizeof(double)), /* inbreeding coefficients */
+      *L = calloc(n + 1, sizeof(double)), *B = calloc(n + 1, sizeof(double));
+    int *Anc = calloc(n + 1, sizeof(int)),	/* ancestor */
+	*LAP = calloc(n + 1, sizeof(int)); 	/* longest ancestoral path */
     R_CheckStack();
     
     for (i = 0; i < n; i++) {     /* Replace NA's by zeros */
@@ -125,8 +125,8 @@ SEXP pedigree_inbreeding(SEXP x)
 	LAP[i] = ((LAP[S] < LAP[D]) ? LAP[D] : LAP[S]) + 1;
 	if (LAP[i] > t) t = LAP[i];
     }
-    SI = Calloc(t + 1, int);
-    MI = Calloc(t + 1, int);
+    SI = calloc(t + 1, sizeof(int));
+    MI = calloc(t + 1, sizeof(int));
     for(i = 0; i <= t ; ++i) SI[i] = MI[i] = 0; /* initialize start and minor */
     for(i = 1; i <= n; i++) { 	/* evaluate F */
 	S = sire[i-1]; D = dam[i-1]; /* parents of animal i */
@@ -171,8 +171,17 @@ SEXP pedigree_inbreeding(SEXP x)
 	if (!sire[i]) sire[i] = NA_INTEGER;
 	if (!dam[i]) dam[i] = NA_INTEGER;
     }
-    Free(F); Free(L); Free(B); Free(Anc); Free(LAP); Free(SI); Free(MI);
+
+    free(F); 
+    free(L); 
+    free(B); 
+    free(Anc); 
+    free(LAP); 
+    free(SI); 
+    free(MI);
+
     UNPROTECT(1);
+    
     return ans;
 }
 

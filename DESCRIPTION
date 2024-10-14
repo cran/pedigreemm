@@ -1,8 +1,21 @@
 Package: pedigreemm
-Version: 0.3-4
-Date: 2023-11-22
+Version: 0.3-5
+Date: 2024-10-10
 Title: Pedigree-Based Mixed-Effects Models
-Author: Douglas Bates, Paulino Perez Rodriguez and Ana Ines Vazquez,
+Authors@R: c(person(given = "Douglas",
+                    family = "Bates",
+                    role = "aut"),
+             person(given="Ana Ines",
+                    family="Vazquez",
+                    role=c("aut","cre"),
+                    email="avazquez@msu.edu"),
+             person(given = "Paulino",
+                      family = "Perez Rodriguez",
+                      role ="ctb",
+                      email = "perpdgo@colpos.mx"))
+Author: Douglas Bates [aut],
+  Ana Ines Vazquez [aut, cre],
+  Paulino Perez Rodriguez [ctb]
 Maintainer: Ana Ines Vazquez <avazquez@msu.edu>
 Description: Fit pedigree-based mixed-effects models.
 Depends: R(>= 3.0.0), lme4 (>= 1.0), Matrix (>= 1.0), methods
@@ -11,6 +24,6 @@ LazyData: yes
 License: GPL (>= 2)
 URL: https://github.com/anainesvs/pedigreemm/
 NeedsCompilation: yes
+Packaged: 2024-10-11 21:02:39 UTC; pperez
 Repository: CRAN
-Packaged: 2023-11-24 17:53:03 UTC; anaivazquez
-Date/Publication: 2023-11-24 22:20:02 UTC
+Date/Publication: 2024-10-14 14:40:02 UTC
